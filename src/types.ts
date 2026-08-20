@@ -1,6 +1,6 @@
 export type MilkChoice = 'oat' | 'whole';
 
-export type SizeKey = 'small' | 'regular' | 'to_go';
+export type SizeKey = string;
 
 export interface Variation {
   id: string;
@@ -20,6 +20,23 @@ export interface Product {
   hasFlavors: boolean;
   squareItemId: string;
   squareModifierListId: string;
+}
+
+export interface SquareCatalogProduct {
+  squareItemId: string;
+  name: string;
+  description: string;
+  image: string;
+  variations: {
+    squareVariationId: string;
+    name: string;
+    priceCents: number;
+  }[];
+}
+
+export interface SquareCatalogResponse {
+  products: SquareCatalogProduct[];
+  cachedAt: number;
 }
 
 export interface CartItem {

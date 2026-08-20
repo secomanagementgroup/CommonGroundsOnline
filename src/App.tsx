@@ -8,10 +8,12 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { Confirmation } from '@/components/Confirmation';
 import { useCart } from '@/hooks/useCart';
+import { useProducts } from '@/hooks/useProducts';
 import type { Product } from '@/types';
 
 function App() {
   const cart = useCart();
+  const { products } = useProducts();
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -52,7 +54,7 @@ function App() {
       />
       <main>
         <Hero />
-        <MenuSection onSelect={setActiveProduct} />
+        <MenuSection products={products} onSelect={setActiveProduct} />
       </main>
       <Footer />
 

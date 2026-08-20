@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { MilkChoice, Product, SizeKey, Variation } from '@/types';
+import type { MilkChoice, Product, Variation } from '@/types';
 import { formatPrice, cn } from '@/lib/utils';
 import { Minus, Plus, X } from 'lucide-react';
 
@@ -14,18 +14,23 @@ const MILKS: { value: MilkChoice; label: string }[] = [
   { value: 'whole', label: 'Whole Milk' },
 ];
 
-const SIZE_ORDER: SizeKey[] = ['small', 'regular', 'to_go'];
-
 export function ProductModal({ product, onClose, onAddToCart }: ProductModalProps) {
-  const [selectedSize, setSelectedSize] = useState<SizeKey>('regular');
+  const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedFlavor, setSelectedFlavor] = useState<string>('');
   const [milk, setMilk] = useState<MilkChoice>('oat');
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (product) {
-      setSelectedSize('regular');
-      setSelectedFlavor(product.hasFlavors ? (product.variations.find((v) => v.size === 'regular')?.flavor ?? '') : '');
+      const firstFlavor = product.hasFlavors
+        ? (product.variations[0]?.flavor ?? '')
+        : '';
+      setSelectedFlavor(firstFlavor);
+
+      const firstVar = product.hasFlavors
+        ? product.variations.find((v) => v.flavor === firstFlavor)
+        : product.variations[0];
+      setSelectedSize(firstVar?.size ?? '');
       setMilk('oat');
       setQuantity(1);
     }
@@ -47,14 +52,14 @@ export function ProductModal({ product, onClose, onAddToCart }: ProductModalProp
   if (!product) return null;
 
   const flavors = product.hasFlavors
-    ? [...new Set(product.variations.map((v) => v.flavor!))]
+    ? [...new Set(product.variations.map((v) => v.flavor!).filter(Boolean))]
     : [];
 
   const availableSizes = product.hasFlavors
-    ? SIZE_ORDER.filter((size) =>
-        product.variations.some((v) => v.size === size && v.flavor === selectedFlavor),
-      )
-    : SIZE_ORDER;
+    ? product.variations.filter((v) => v.flavor === selectedFlavor)
+    : product.variations;
+
+  const sizeKeys = [...new Set(availableSizes.map((v) => v.size))];
 
   const currentVariation = product.variations.find(
     (v) => v.size === selectedSize && (!product.hasFlavors || v.flavor === selectedFlavor),
@@ -79,12 +84,18 @@ export function ProductModal({ product, onClose, onAddToCart }: ProductModalProp
           <X className="h-5 w-5" />
         </button>
 
-        <div className="relative aspect-[16/10] overflow-hidden">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
+        <div className="relative aspect-[16/10] overflow-hidden bg-cream-200">
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-espresso-400">
+              <Plus className="h-12 w-12" />
+            </div>
+          )}
         </div>
 
         <div className="flex max-h-[60vh] flex-col gap-5 overflow-y-auto p-6">
@@ -106,7 +117,11 @@ export function ProductModal({ product, onClose, onAddToCart }: ProductModalProp
                 {flavors.map((f) => (
                   <button
                     key={f}
-                    onClick={() => setSelectedFlavor(f)}
+                    onClick={() => {
+                      setSelectedFlavor(f);
+                      const firstSize = product.variations.find((v) => v.flavor === f);
+                      if (firstSize) setSelectedSize(firstSize.size);
+                    }}
                     className={cn(
                       'rounded-xl border px-4 py-2.5 text-sm font-semibold transition',
                       selectedFlavor === f
@@ -126,10 +141,8 @@ export function ProductModal({ product, onClose, onAddToCart }: ProductModalProp
               Size
             </span>
             <div className="grid grid-cols-3 gap-2">
-              {availableSizes.map((size) => {
-                const varForSize = product.variations.find(
-                  (v) => v.size === size && (!product.hasFlavors || v.flavor === selectedFlavor),
-                );
+              {sizeKeys.map((size) => {
+                const varForSize = availableSizes.find((v) => v.size === size);
                 return (
                   <button
                     key={size}

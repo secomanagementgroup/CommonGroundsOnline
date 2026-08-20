@@ -2,7 +2,7 @@ import type { Product } from '@/types';
 
 const MODIFIER_LIST_ID = 'JG7CFWZAVLG2E5XPGCXG6KBH';
 
-export const products: Product[] = [
+export const fallbackProducts: Product[] = [
   {
     id: 'banana-bread',
     name: 'Banana Bread',

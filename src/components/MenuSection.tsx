@@ -1,13 +1,13 @@
-import { products } from '@/data/products';
 import type { Product } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 
 interface MenuSectionProps {
+  products: Product[];
   onSelect: (product: Product) => void;
 }
 
-export function MenuSection({ onSelect }: MenuSectionProps) {
+export function MenuSection({ products, onSelect }: MenuSectionProps) {
   return (
     <section id="menu" className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <div className="mb-8 flex flex-col gap-2 sm:mb-10">
