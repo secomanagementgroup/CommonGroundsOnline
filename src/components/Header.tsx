@@ -13,7 +13,7 @@ export function Header({ cartCount, cartTotal, onOpenCart }: HeaderProps) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <a href="#top" className="flex items-center gap-3">
           <img
-            src="/images/4913498224090352720_121.jpg"
+            src="images/4913498224090352720_121.jpg"
             alt="Common Grounds Coffee"
             className="h-11 w-11 rounded-full object-cover ring-2 ring-cream-300/70 sm:h-12 sm:w-12"
           />
