@@ -19,14 +19,19 @@ interface SquareObject {
     item_id: string;
     name: string;
     price_money?: { amount: number; currency: string };
-    image_id?: string;
   };
   image_data?: {
     url?: string;
   };
 }
 
-interface SquareCatalogResponse {
+interface SquareListResponse {
+  objects?: SquareObject[];
+  errors?: { code: string; detail: string }[];
+  cursor?: string;
+}
+
+interface SquareBatchResponse {
   objects?: SquareObject[];
   errors?: { code: string; detail: string }[];
 }
@@ -55,61 +60,103 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const catalogResponse = await fetch(
-      "https://connect.squareup.com/v2/catalog/list?types=ITEM,IMAGE",
-      {
-        method: "GET",
-        headers: {
-          "Square-Version": "2024-08-21",
-          "Authorization": `Bearer ${config.access_token}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    const authHeaders = {
+      "Square-Version": "2024-08-21",
+      "Authorization": `Bearer ${config.access_token}`,
+      "Content-Type": "application/json",
+    };
 
-    const catalogData: SquareCatalogResponse = await catalogResponse.json();
+    // Step 1: Fetch all ITEM objects (with pagination)
+    const allItems: SquareObject[] = [];
+    let cursor: string | undefined;
+    do {
+      const url = new URL("https://connect.squareup.com/v2/catalog/list");
+      url.searchParams.set("types", "ITEM");
+      if (cursor) url.searchParams.set("cursor", cursor);
 
-    if (!catalogResponse.ok) {
-      console.error("Square catalog error:", JSON.stringify(catalogData));
-      const errMsg = catalogData?.errors?.[0]?.detail || "Failed to fetch catalog.";
-      return new Response(
-        JSON.stringify({ error: errMsg }),
-        { status: catalogResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+      const resp = await fetch(url, { method: "GET", headers: authHeaders });
+      const data: SquareListResponse = await resp.json();
 
-    const objects = catalogData.objects || [];
+      if (!resp.ok) {
+        console.error("Square list error:", JSON.stringify(data));
+        const errMsg = data?.errors?.[0]?.detail || "Failed to fetch catalog.";
+        return new Response(
+          JSON.stringify({ error: errMsg }),
+          { status: resp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
 
+      allItems.push(...(data.objects || []));
+      cursor = data.cursor;
+    } while (cursor);
+
+    // Step 2: Collect all image IDs from items
+    const imageIds = allItems
+      .map((item) => item.item_data?.image_id)
+      .filter((id): id is string => Boolean(id));
+
+    // Step 3: Batch-retrieve image objects to get reliable URLs
     const imageMap = new Map<string, string>();
-    for (const obj of objects) {
-      if (obj.type === "IMAGE" && obj.image_data?.url) {
-        imageMap.set(obj.id, obj.image_data.url);
+
+    if (imageIds.length > 0) {
+      // BatchRetrieveCatalogObjects accepts up to 1000 IDs at a time
+      const chunks: string[][] = [];
+      for (let i = 0; i < imageIds.length; i += 1000) {
+        chunks.push(imageIds.slice(i, i + 1000));
+      }
+
+      for (const chunk of chunks) {
+        const batchResp = await fetch(
+          "https://connect.squareup.com/v2/catalog/batch-retrieve",
+          {
+            method: "POST",
+            headers: authHeaders,
+            body: JSON.stringify({
+              object_ids: chunk,
+              include_related_objects: false,
+            }),
+          },
+        );
+
+        const batchData: SquareBatchResponse = await batchResp.json();
+
+        if (batchResp.ok && batchData.objects) {
+          for (const obj of batchData.objects) {
+            if (obj.type === "IMAGE" && obj.image_data?.url) {
+              imageMap.set(obj.id, obj.image_data.url);
+            }
+          }
+        } else if (!batchResp.ok) {
+          console.error("Square batch-retrieve error:", JSON.stringify(batchData));
+        }
       }
     }
 
-    const items = objects.filter((o) => o.type === "ITEM" && o.item_data);
+    // Step 4: Map items to products
+    const products = allItems
+      .filter((o) => o.type === "ITEM" && o.item_data)
+      .map((item) => {
+        const data = item.item_data!;
+        const variations = (data.variations || []).filter(
+          (v) => v.type === "ITEM_VARIATION" && v.item_variation_data?.price_money,
+        );
 
-    const products = items.map((item) => {
-      const data = item.item_data!;
-      const variations = (data.variations || []).filter(
-        (v) => v.type === "ITEM_VARIATION" && v.item_variation_data?.price_money,
-      );
-
-      return {
-        squareItemId: item.id,
-        name: data.name,
-        description: data.description || "",
-        image: data.image_id ? (imageMap.get(data.image_id) || "") : "",
-        variations: variations.map((v) => {
-          const varData = v.item_variation_data!;
-          return {
-            squareVariationId: v.id,
-            name: varData.name,
-            priceCents: varData.price_money!.amount,
-          };
-        }),
-      };
-    }).filter((p) => p.variations.length > 0);
+        return {
+          squareItemId: item.id,
+          name: data.name,
+          description: data.description || "",
+          image: data.image_id ? (imageMap.get(data.image_id) || "") : "",
+          variations: variations.map((v) => {
+            const varData = v.item_variation_data!;
+            return {
+              squareVariationId: v.id,
+              name: varData.name,
+              priceCents: varData.price_money!.amount,
+            };
+          }),
+        };
+      })
+      .filter((p) => p.variations.length > 0);
 
     return new Response(
       JSON.stringify({ products, cachedAt: Date.now() }),

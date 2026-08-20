@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Product, SquareCatalogProduct, SquareCatalogResponse } from '@/types';
 import { fallbackProducts } from '@/data/products';
 import { supabase } from '@/lib/supabase';
 
 const CACHE_KEY = 'cg_square_catalog';
-const CACHE_TTL = 10 * 60 * 1000;
+const CACHE_TTL = 2 * 60 * 1000;
 
 interface CachedCatalog {
   products: Product[];
@@ -15,6 +15,14 @@ const slugify = (name: string) =>
   name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const MODIFIER_LIST_ID = 'JG7CFWZAVLG2E5XPGCXG6KBH';
+
+const fallbackImageMap = new Map(
+  fallbackProducts.map((p) => [slugify(p.name), p.image]),
+);
+
+function getFallbackImage(name: string): string {
+  return fallbackImageMap.get(slugify(name)) || '';
+}
 
 function mapSquareProduct(sp: SquareCatalogProduct): Product {
   const variations = sp.variations.map((v) => {
@@ -40,7 +48,7 @@ function mapSquareProduct(sp: SquareCatalogProduct): Product {
     id: slugify(sp.name),
     name: sp.name,
     description: sp.description,
-    image: sp.image,
+    image: sp.image || getFallbackImage(sp.name),
     variations,
     hasFlavors,
     squareItemId: sp.squareItemId,
@@ -68,52 +76,61 @@ function writeCache(products: Product[]) {
   }
 }
 
+function clearCache() {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>(fallbackProducts);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
+  const fetchCatalog = useCallback(async (force: boolean): Promise<boolean> => {
+    if (!force) {
       const cached = readCache();
       if (cached && Date.now() - cached.cachedAt < CACHE_TTL) {
-        if (!cancelled) {
-          setProducts(cached.products);
-          setLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke<SquareCatalogResponse>(
-          'get-square-catalog',
-        );
-
-        if (error || !data?.products) throw error || new Error('No products returned');
-
-        const mapped = data.products.map(mapSquareProduct).filter((p) => p.variations.length > 0);
-
-        if (mapped.length === 0) {
-          if (!cancelled) setLoading(false);
-          return;
-        }
-
-        writeCache(mapped);
-        if (!cancelled) {
-          setProducts(mapped);
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) setLoading(false);
+        setProducts(cached.products);
+        setLoading(false);
+        return true;
       }
     }
 
-    load();
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const { data, error } = await supabase.functions.invoke<SquareCatalogResponse>(
+        'get-square-catalog',
+      );
+
+      if (error || !data?.products) throw error || new Error('No products returned');
+
+      const mapped = data.products.map(mapSquareProduct).filter((p) => p.variations.length > 0);
+
+      if (mapped.length === 0) {
+        setLoading(false);
+        return false;
+      }
+
+      writeCache(mapped);
+      setProducts(mapped);
+      setLoading(false);
+      return true;
+    } catch {
+      setLoading(false);
+      return false;
+    }
   }, []);
 
-  return { products, loading };
+  useEffect(() => {
+    fetchCatalog(false);
+  }, [fetchCatalog]);
+
+  const refresh = useCallback(async () => {
+    clearCache();
+    setLoading(true);
+    await fetchCatalog(true);
+  }, [fetchCatalog]);
+
+  return { products, loading, refresh };
 }
