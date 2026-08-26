@@ -1,5 +1,26 @@
 import { Bean, Clock, Sparkles, Droplet, House, Milk } from 'lucide-react';
 
+function FiltrationIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3v2M12 9v2M12 15v2M12 21v0" />
+      <path d="M3 7c1.5-2 3-2 4.5 0s3 2 4.5 0s3-2 4.5 0" />
+      <path d="m15.5 5 2.5 2-2.5 2" />
+      <path d="M3 17c1.5 2 3 2 4.5 0s3-2 4.5 0s3 2 4.5 0" />
+      <path d="m15.5 15 2.5 2-2.5 2" />
+    </svg>
+  );
+}
+
 const pillars = [
   {
     icon: Bean,
@@ -12,7 +33,7 @@ const pillars = [
     body: 'Ground and steeped cold for 18 hours to pull out a smooth, low-acid finish.',
   },
   {
-    icon: House,
+    icon: FiltrationIcon,
     title: 'Filtration',
     body: 'The beans are vetted, the water is triple filtered, and the finished product is filtered once more before serving.',
   },
