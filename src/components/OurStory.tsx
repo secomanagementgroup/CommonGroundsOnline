@@ -1,4 +1,4 @@
-import { Bean, Clock, Sparkles, Droplet } from 'lucide-react';
+import { Bean, Clock, Sparkles, Droplet, House } from 'lucide-react';
 
 const pillars = [
   {
@@ -12,7 +12,7 @@ const pillars = [
     body: 'Ground and steeped cold for 18 hours to pull out a smooth, low-acid finish.',
   },
   {
-    icon: Sparkles,
+    icon: House,
     title: 'Filtration',
     body: 'The beans are vetted, the water is triple filtered, and the finished product is filtered once more before serving.',
   },
