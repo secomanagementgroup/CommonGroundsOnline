@@ -17,7 +17,7 @@ const pillars = [
     body: 'The beans are vetted, the water is triple filtered, and the finished product is filtered once more before serving.',
   },
   {
-    icon: Droplet,
+    icon: Sparkles,
     title: 'Just Add Milk',
     body: 'We know, there are about 50 different “milk” options. We offer Whole Cow Milk and Oat Milk.',
   },
