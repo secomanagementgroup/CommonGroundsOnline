@@ -13,7 +13,7 @@ export function MenuSection({ products, onSelect }: MenuSectionProps) {
       <div className="mb-8 flex flex-col gap-2 sm:mb-10">
         <span className="text-xs font-semibold uppercase tracking-[0.3em] text-caramel-600" />
         <h2 className="font-serif text-3xl font-bold text-espresso-950 sm:text-4xl">
-          Our Menu
+          What's Brewing?
         </h2>
         <p className="max-w-xl text-espresso-700/80">
           Tap any drink to pick your size, flavor, and milk. Your order
