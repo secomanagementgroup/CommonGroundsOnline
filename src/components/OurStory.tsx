@@ -41,9 +41,7 @@ export function OurStory() {
     >
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-caramel-600">
-            Our Story
-          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-caramel-600" />
           <h2 className="mt-4 font-serif text-3xl font-bold leading-tight text-espresso-950 sm:text-5xl">
             What makes Common Grounds
             <br className="hidden sm:block" /> not so common?
