@@ -23,7 +23,7 @@ const pillars = [
   },
   {
     icon: Sparkles,
-    title: 'Scratch-Made Syrups',
+    title: 'Home-Made Syrups',
     body: 'Every syrup is made from scratch with ingredients you can pronounce and count on one hand.',
   },
   {
