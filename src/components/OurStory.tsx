@@ -22,7 +22,7 @@ const pillars = [
     body: 'We know, there are about 50 different “milk” options. We offer Whole Cow Milk and Oat Milk.',
   },
   {
-    icon: Sparkles,
+    icon: House,
     title: 'Home-Made Syrups',
     body: 'Every syrup is made from scratch with ingredients you can pronounce and count on one hand.',
   },
