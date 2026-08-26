@@ -15,14 +15,7 @@ export function Hero() {
             <br />
             <span className="text-caramel-400">Common Grounds.</span>
           </h1>
-          <div className="mt-6 space-y-1.5">
-            <p className="text-lg font-medium text-cream-200/90 sm:text-xl">
-              Coffee made from scratch.
-            </p>
-            <p className="text-lg font-medium text-cream-200/90 sm:text-xl">
-              Moments made together.
-            </p>
-          </div>
+          <div className="mt-6 space-y-1.5" />
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a
               href="#menu"
