@@ -11,9 +11,7 @@ export function MenuSection({ products, onSelect }: MenuSectionProps) {
   return (
     <section id="menu" className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <div className="mb-8 flex flex-col gap-2 sm:mb-10">
-        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-caramel-600">
-          Freshly Brewed
-        </span>
+        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-caramel-600" />
         <h2 className="font-serif text-3xl font-bold text-espresso-950 sm:text-4xl">
           Our Menu
         </h2>
