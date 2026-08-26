@@ -27,7 +27,7 @@ const pillars = [
     body: 'Every syrup is made from scratch with ingredients you can pronounce and count on one hand.',
   },
   {
-    icon: Droplet,
+    icon: Sparkles,
     title: 'Curated Cream Tops',
     body: 'Our curated cream tops bring it all together with perfectly paired flavor notes.',
   },
