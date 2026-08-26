@@ -1,8 +1,8 @@
-import { Coffee, Clock, Sparkles, Droplet } from 'lucide-react';
+import { Bean, Clock, Sparkles, Droplet } from 'lucide-react';
 
 const pillars = [
   {
-    icon: Coffee,
+    icon: Bean,
     title: 'Fresh Roasted Beans',
     body: 'We start with fresh roasted whole beans, and grind them in house before every brew',
   },
