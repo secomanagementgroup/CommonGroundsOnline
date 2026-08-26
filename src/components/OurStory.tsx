@@ -1,4 +1,4 @@
-import { Bean, Clock, Sparkles, Droplet, House } from 'lucide-react';
+import { Bean, Clock, Sparkles, Droplet, House, Milk } from 'lucide-react';
 
 const pillars = [
   {
@@ -17,7 +17,7 @@ const pillars = [
     body: 'The beans are vetted, the water is triple filtered, and the finished product is filtered once more before serving.',
   },
   {
-    icon: Sparkles,
+    icon: Milk,
     title: 'Just Add Milk',
     body: 'We know, there are about 50 different “milk” options. We offer Whole Cow Milk and Oat Milk.',
   },
